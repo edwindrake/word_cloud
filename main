@@ -1,0 +1,64 @@
+import collections
+import string
+import requests
+from googlesearch import search
+from bs4 import BeautifulSoup
+
+#load stopwords
+filename = 'stopwords'
+file = open(filename, 'rt')
+stopwords_raw = file.read()
+stopwords = stopwords_raw.decode('utf-8').lower().split()
+file.close()
+
+# create your data structure here.
+wordcount={}
+
+#Finding your name and getting the text from the htmls
+query = input()
+for url in search(query, tld="co.in", num=10, stop=1, pause=2):
+	#print(url)
+	url2 = requests.get(url)
+	content = url2.content
+	soup = BeautifulSoup(content, features="html.parser")
+	[s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])]
+	text = soup.getText()
+	for word in text.encode('ascii', 'ignore').lower().split():
+		word = word.replace(string.punctuation,"")
+		word = word.replace(".","")
+		word = word.replace("]","")
+		word = word.replace("[","")
+		word = word.replace("-","")
+		word = word.replace(",","")
+		word = word.replace("\"","") 
+		word = word.replace("'","")
+		word = word.replace("^","")
+		word = word.replace("',","")
+		word = word.replace("/","")
+		word = word.replace("&","")
+		word = word.replace("', ","")
+		if word not in stopwords:
+			if word not in wordcount:
+				wordcount[word] = 0
+			else:
+				wordcount[word] += 1
+
+
+# if you want to use stopwords, here's an example of how to do this
+# stopwords = set(line.strip() for line in open('stopwords'))
+
+
+# Instantiate a dictionary, and for every word in the file, add to 
+# the dictionary if it doesn't exist. If it does, increase the count.
+
+# Hint: To eliminate duplicates, remember to split by punctuation, 
+# and use case demiliters. The functions lower() and split() will be useful!
+
+# after building your wordcount, you can then sort it and return the first
+# n words.  If you want, collections.Counter may be useful.
+
+d = collections.Counter(wordcount)
+
+#print(d.most_common(10))
+for word, count in d.most_common(20):
+	print(word, ": ", count)
